@@ -3,6 +3,11 @@
   Author:     Israel Dryer
   Email:      israel.dryer@gmail.com
   Modified:   2020-06-20
+
+  Editor: Patrick Stampler
+  Features added: 
+    - Folder Structure Browser for easier note organizations
+
 '''
 import PySimpleGUI as sg
 import pathlib
