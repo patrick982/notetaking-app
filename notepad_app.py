@@ -5,7 +5,8 @@
   Modified:   2020-06-20
 
   Editor: Patrick Stampler
-  Features added: 
+  Email: patrick@ow
+  Features added:
     - Folder Structure Browser for easier note organizations
 
 '''
@@ -18,31 +19,38 @@ WIN_W = 90
 WIN_H = 25
 file = None
 
+fnames = []
+
+# Definition of top menu band
 menu_layout = [['File', ['New (Ctrl+N)', 'Open (Ctrl+O)', 'Save (Ctrl+S)', 'Save As', '---', 'Exit']],
                ['Tools', ['Word Count']],
                ['Help', ['About']]]
 
+# Definition of file list column (includes the browse button)
 file_list_column = [
     [
         sg.Text("Notes Folder"),
         sg.In(size=(25, 1), enable_events=True, key="-FOLDER-"),
-        sg.FolderBrowse(),
+        sg.FolderBrowse("Browse")
     ],
     [
         sg.Listbox(
-            values=[], enable_events=True, size=(40, 20), key="-FILE LIST-"
+            values=[], enable_events=True, size=(40, 50), key="-FILE LIST-"
         )
     ],
+    [
+        sg.Text('> New file <', font=('Consolas', 10),
+                size=(40, 1), key='_INFO_')
+    ]
 ]
 
-layout = [[sg.Column(file_list_column)], [sg.Menu(menu_layout)],
-          [sg.Text('> New file <', font=('Consolas', 10),
-                   size=(WIN_W, 1), key='_INFO_')],
-          [sg.Multiline(font=('Consolas', 12), size=(WIN_W, WIN_H), key='_BODY_')]]
+# Screen layout
+layout = [[sg.Menu(menu_layout)], [sg.Column(file_list_column), sg.Multiline(
+    font=('Consolas', 12), size=(100, WIN_H/2), key='_BODY_')]]
 
 window = sg.Window('Notepad', layout=layout, margins=(
     0, 0), resizable=True, return_keyboard_events=True, finalize=True)
-window.maximize()
+# window.maximize()
 window['_BODY_'].expand(expand_x=True, expand_y=True)
 
 
@@ -112,32 +120,33 @@ while True:
         about_me()
 
     # -- note selector --
-    event, values = window.read()
     if event == "Exit" or event == sg.WIN_CLOSED:
         break
     # Folder name was filled in, make a list of files in the folder
-    if event == "-FOLDER-":
-        folder = values["-FOLDER-"]
-        try:
-            # Get list of files in folder
-            file_list = os.listdir(folder)
-        except:
-            file_list = []
+    folder = values["-FOLDER-"]
+    try:
+        # Get list of files in folder
+        file_list = os.listdir(folder)
+    except:
+        file_list = []
 
-        fnames = [
-            f
-            for f in file_list
-            if os.path.isfile(os.path.join(folder, f))
-            and f.lower().endswith((".txt"))
-        ]
-        window["-FILE LIST-"].update(fnames)
-    elif event == "-FILE LIST-":  # A file was chosen from the listbox
+    fnames = [
+        f
+        for f in file_list
+        if os.path.isfile(os.path.join(folder, f))
+        and f.lower().endswith((".txt"))
+    ]
+    window["-FILE LIST-"].update(fnames)
+
+    if event == "-FILE LIST-":  # A file was chosen from the listbox
         try:
             filename = os.path.join(
                 values["-FOLDER-"], values["-FILE LIST-"][0]
             )
-            window["-TOUT-"].update(filename)
-            window["-IMAGE-"].update(filename=filename)
+
+            file = pathlib.Path(filename)
+            window['_BODY_'].update(value=file.read_text())
+            window['_INFO_'].update(value=file.absolute())
 
         except:
             pass
