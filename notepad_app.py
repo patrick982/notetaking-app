@@ -10,13 +10,14 @@
     - Folder Structure Browser for easier note organizations
 
 '''
+from typing import Text
 import PySimpleGUI as sg
 import pathlib
 import os
 sg.ChangeLookAndFeel('BrownBlue')  # change style
 
 WIN_W = 90
-WIN_H = 25
+WIN_H = 45
 file = None
 
 fnames = []
@@ -38,15 +39,23 @@ file_list_column = [
             values=[], enable_events=True, size=(40, 50), key="-FILE LIST-"
         )
     ],
+]
+
+textbox_column = [
     [
         sg.Text('> New file <', font=('Consolas', 10),
                 size=(40, 1), key='_INFO_')
+    ],
+    [
+        sg.Multiline(
+            font=('Consolas', 12), size=(100, WIN_H), key='_BODY_')
     ]
+
 ]
 
 # Screen layout
-layout = [[sg.Menu(menu_layout)], [sg.Column(file_list_column), sg.Multiline(
-    font=('Consolas', 12), size=(100, WIN_H/2), key='_BODY_')]]
+layout = [[sg.Menu(menu_layout)], [sg.Column(
+    file_list_column), sg.Column(textbox_column)]]
 
 window = sg.Window('Notepad', layout=layout, margins=(
     0, 0), resizable=True, return_keyboard_events=True, finalize=True)
@@ -76,6 +85,7 @@ def save_file(file):
     '''Save file instantly if already open; otherwise use `save-as` popup'''
     if file:
         file.write_text(values.get('_BODY_'))
+        sg.PopupQuickMessage("File saved!")
     else:
         save_file_as()
 
@@ -87,6 +97,7 @@ def save_file_as():
         file = pathlib.Path(filename)
         file.write_text(values.get('_BODY_'))
         window['_INFO_'].update(value=file.absolute())
+        sg.PopupQuickMessage("File saved!")
         return file
 
 
